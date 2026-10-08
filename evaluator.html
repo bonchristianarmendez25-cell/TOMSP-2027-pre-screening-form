@@ -43,6 +43,20 @@ body.out main{width:100%}
 #login{max-width:520px;margin:16px auto 0;text-align:left}#login .lh{margin:0 0 12px;color:#5b6b7a;font-size:13.5px}
 .lf{display:flex;flex-wrap:wrap;gap:8px}.lf input{flex:1 1 200px;padding:11px 12px}.lf button{flex:1 1 100%;padding:11px;font-weight:600;background:#0B3A82;border-bottom:3px solid #F2C200}
 body.out .crew{height:clamp(150px,17vw,290px);margin-top:auto;background-size:cover;background-position:bottom center}
+.gd{margin:0 0 14px;border:1px solid #d5dde6;border-radius:12px;background:#fff}.gd summary{cursor:pointer;padding:11px 14px;font-weight:600;color:#0B3A82;border-left:5px solid #F2C200;border-radius:12px}
+.gd[open] summary{border-bottom:1px solid #d5dde6;border-radius:12px 12px 0 0}.gd>*:not(summary){margin-left:14px;margin-right:14px}
+.gh{margin:12px 14px 12px 34px;padding:0;font-size:13.5px;color:#33414f}.gh li{margin:3px 0}.gh2{font-size:12.5px;color:#5b6b7a;margin-top:8px}.tiers{display:flex;flex-wrap:wrap;gap:8px;margin:10px 14px 14px}
+.mx{font-size:13px}.mx th{text-align:center}.mx td:nth-child(n+3){text-align:center}.mx tr.ch td{border-top:2px solid #fff}.mx tr.tt td{font-weight:700;color:#0B3A82;background:#EAF1FB}
+.wb{display:inline-block;vertical-align:middle;width:90px;height:7px;background:rgba(255,255,255,.7);border-radius:9px;overflow:hidden}.wb i{display:block;height:100%;background:#0B3A82}
+.ip{display:inline-flex;align-items:center;gap:8px}.bnd{font-style:normal;font-size:11.5px;color:#5b6b7a;min-width:84px;text-align:right}
+.mbar{position:sticky;bottom:0;z-index:5;background:rgba(255,255,255,.97);border-top:3px solid #F2C200;margin:14px -16px -16px;padding:10px 16px 18px;border-radius:0 0 14px 14px;box-shadow:0 -6px 14px rgba(11,58,130,.08)}
+.mb-top{display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#0B3A82;margin-bottom:8px}.mb-top b{font-size:20px}
+.mb-track{display:flex;position:relative;height:12px;border-radius:4px;background:#E3EAF4}.sgw{height:100%;background:#E3EAF4;border-right:2px solid #fff;overflow:hidden}.sgw i{display:block;height:100%;width:0;transition:width .2s}
+.mb-t{margin-top:6px;height:8px;margin-bottom:12px}.tk{position:absolute;top:-3px;bottom:-3px;width:0;border-left:2px dashed #7b8da6}.tk u{position:absolute;top:18px;left:-12px;font-size:10.5px;color:#5b6b7a;text-decoration:none}
+.crewwrap{position:relative;isolation:isolate;margin-top:auto;overflow:hidden}
+.crewwrap::before{content:"";position:absolute;inset:0;z-index:-1;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 260' preserveAspectRatio='none'%3E%3Cpath d='M0 178 C250 125 470 125 720 168 S1160 232 1600 145 L1600 260 L0 260Z' fill='%23F2C200' fill-opacity='.5'/%3E%3Cpath d='M0 208 C300 165 540 172 820 203 S1260 242 1600 190 L1600 260 L0 260Z' fill='%231B5BB5' fill-opacity='.4'/%3E%3Cpath d='M0 236 C350 208 620 217 920 236 S1360 252 1600 228 L1600 260 L0 260Z' fill='%230B3A82' fill-opacity='.75'/%3E%3C/svg%3E") bottom/100% 100% no-repeat,radial-gradient(ellipse at 50% 100%,rgba(242,194,0,.4),transparent 60%),linear-gradient(to top,#cfe0f7,rgba(207,224,247,0) 85%)}
+.crewwrap .crew{margin-top:0!important;background-image:url(bg-crew-blue.jpg)!important;-webkit-mask-image:linear-gradient(to top,#000 55%,transparent)!important;mask-image:linear-gradient(to top,#000 55%,transparent)!important}
+body.out .crewwrap .crew{height:clamp(170px,19vw,320px)}
 </style>
 </head><body class="out">
 <div class="bg tl"></div><div class="bg tr"></div>
@@ -52,7 +66,7 @@ body.out .crew{height:clamp(150px,17vw,290px);margin-top:auto;background-size:co
 <section id="login"><h2>Evaluator sign-in</h2><p class="lh">Authorized evaluators only. Use the email and password from your TOMSP administrator.</p><div class="lf"><input id="em" type="email" placeholder="Email" autocomplete="username"><input id="pw" type="password" placeholder="Password" autocomplete="current-password"><button id="go">Sign in</button></div><p id="err" style="color:#b00020;margin:8px 0 0;font-size:13.5px"></p></section>
 <div id="app" hidden><section id="list"></section><div id="detail"></div></div>
 </main>
-<div class="crew"></div>
+<div class="crewwrap"><div class="crew"></div></div>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {getFirestore,collection,getDocs,doc,updateDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -70,7 +84,8 @@ const C=[["Academic Excellence",[["gwa","GPA / Academic Standing",10],["aw","Aca
 ["Maritime Project Proposal",[["rel","Relevance of Maritime Issue",4],["inn","Innovation & Creativity",4],["fea","Feasibility",4],["sus","Sustainability & Impact",3]]]];
 // Tier cut-offs: adjust to match your instructor's rubric
 const COL=["#FFF3C2","#DCE8F8","#FFF3C2","#DCE8F8","#FFF3C2","#DCE8F8"];
-const tier=t=>t>=90?"Strongly Recommend":t>=80?"Recommend":t>=70?"Waitlist":"Not Recommended";
+const TIERS=[[90,"Strongly Recommend"],[80,"Recommend"],[70,"Waitlist"],[0,"Not Recommended"]]; // edit the cut-offs here
+const tier=t=>TIERS.find(x=>t>=x[0])[1];
 let N=[],me=null;
 
 $("#go").onclick=()=>signInWithEmailAndPassword(auth,$("#em").value,$("#pw").value).catch(e=>$("#err").textContent=e.message);
@@ -83,6 +98,17 @@ const avg=n=>{const v=Object.values(n.evals||{}).map(e=>e.total);return v.length
 
 let Q="",SCH="",ST="";
 const tc={"Strongly Recommend":"t1","Recommend":"t2","Waitlist":"t3","Not Recommended":"t4","Not scored":"t0"};
+const TOT=C.reduce((a,c)=>a+c[1].reduce((u,x)=>u+x[2],0),0),cmax=c=>c[1].reduce((a,x)=>a+x[2],0);
+const BANDS=[["Outstanding",.9],["Very good",.75],["Satisfactory",.6]],pt=x=>+x.toFixed(2);
+const bandOf=(r,raw)=>raw===""?"":r>=.9?"Outstanding":r>=.75?"Very good":r>=.6?"Satisfactory":"Below 60%";
+const cut=(t,i)=>t[0]?"≥ "+t[0]:"Below "+TIERS[i-1][0];
+function rubric(){
+ const rows=C.map((c,ci)=>{const cm=cmax(c);return `<tr class="ch" style="background:${COL[ci]}"><td colspan="2"><b>${esc(c[0])}</b></td><td><b>${cm}</b></td><td colspan="4"><div class="wb"><i style="width:${cm/TOT*100}%"></i></div> ${pt(cm/TOT*100)}% of the total</td></tr>`+c[1].map(([k,l,mx])=>`<tr><td></td><td>${esc(l)}</td><td>${mx}</td>${BANDS.map(b=>`<td>≥ ${pt(mx*b[1])}</td>`).join("")}<td>&lt; ${pt(mx*.6)}</td></tr>`).join("")}).join("");
+ return `<ol class="gh"><li><b>You score each criterion by hand</b>, from 0 up to its maximum, in steps of 0.5. Nothing is calculated automatically from the form.</li><li><b>Your total</b> is the sum of all criteria, out of ${TOT}.</li><li><b>A nominee's score</b> is the average of every evaluator's total, and the ranking follows that average.</li><li><b>The suggested tier</b> comes from the average using the cut-offs below. Your own recommendation is saved with your scores but does not change the average or rank.</li></ol>
+ <div class="tw"><table class="mx"><thead><tr><th colspan="2">Criterion</th><th>Max</th><th>Outstanding<br><small>90% and up</small></th><th>Very good<br><small>75% and up</small></th><th>Satisfactory<br><small>60% and up</small></th><th>Below<br><small>under 60%</small></th></tr></thead><tbody>${rows}<tr class="tt"><td colspan="2">Total</td><td>${TOT}</td><td colspan="4"></td></tr></tbody></table></div>
+ <p class="gh2">The point bands are a suggested scale (a share of each criterion's maximum) to help evaluators stay consistent. Only the numbers you enter are saved.</p>
+ <div class="tiers">${TIERS.map((t,i)=>`<span class="pill ${tc[t[1]]}">${cut(t,i)} · ${t[1]}</span>`).join("")}</div>`}
+const mbar=()=>`<div class="mbar"><div class="mb-top"><span>Total <b id="tot2">0</b> / ${TOT} <small style="color:#5b6b7a">· top bar: points per category · bottom bar: total vs tier cut-offs</small></span><span id="tr2" class="pill t0"></span></div><div class="mb-track">${C.map((c,ci)=>`<div class="sgw" title="${esc(c[0])}" style="width:${cmax(c)/TOT*100}%"><i id="sg${ci}" style="background:${ci%2?"#F2C200":"#0B3A82"}"></i></div>`).join("")}</div><div class="mb-track mb-t"><div class="sgw" style="width:100%"><i id="tf" style="background:linear-gradient(90deg,#0B3A82,#F2C200)"></i></div>${TIERS.filter(t=>t[0]).map(t=>`<b class="tk" style="left:${t[0]/TOT*100}%"><u>${t[0]}</u></b>`).join("")}</div></div>`;
 const fmt=d=>d&&!isNaN(d)?d.toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"}):"";
 const sub=n=>n.submittedAt?.toDate?.()||null;
 const mine=n=>!!(n.evals||{})[me.uid];
@@ -99,6 +125,7 @@ function list(){$("#detail").innerHTML="";$("#list").hidden=false;
  N.sort((a,b)=>(avg(b)??-1)-(avg(a)??-1));
  const s=stats(),schools=[...new Set(N.map(n=>n.info?.school).filter(Boolean))].sort();
  $("#list").innerHTML=`<div class="stats"><div class="st"><b>${s.tot}</b><span>Nominees</span></div><div class="st"><b>${s.scored}</b><span>Scored by anyone</span></div><div class="st"><b>${s.avg==null?"—":s.avg.toFixed(1)}</b><span>Average score</span></div><div class="st"><b>${s.top==null?"—":s.top.toFixed(1)}</b><span>Highest score</span></div><div class="st gold"><b>${s.pend}</b><span>Waiting for your score</span></div></div>
+ <details class="gd"><summary>How scoring works · rubric matrix</summary>${rubric()}</details>
  <div class="tools"><input id="q" type="search" placeholder="Search name, school or course" value="${esc(Q)}"><select id="sch"><option value="">All schools</option>${schools.map(x=>`<option${x==SCH?" selected":""}>${esc(x)}</option>`).join("")}</select>
  <select id="stt"><option value="">All statuses</option><option value="pending"${ST=="pending"?" selected":""}>Waiting for my score</option><option value="mine"${ST=="mine"?" selected":""}>Scored by me</option>${["Strongly Recommend","Recommend","Waitlist","Not Recommended","Not scored"].map(x=>`<option${x==ST?" selected":""}>${x}</option>`).join("")}</select>
  <span id="cnt" class="cnt"></span><span class="sp"></span><button class="s" id="csv">CSV</button><button id="xlsx">Download Excel</button></div>
@@ -133,6 +160,9 @@ async function xlsx(){
  sheet("Evaluator Scores","One row per evaluator per nominee · "+now,["Nominee","School","Evaluator",...flat.map(x=>x[1]+" /"+x[2]),"Total /100","Recommendation","Date scored"],
   N.flatMap(n=>Object.values(n.evals||{}).map(e=>[nm(n),n.info?.school||"",e.by||"",...flat.map(x=>+e.scores?.[x[0]]||0),e.total,e.rec||"",new Date(e.at)])),
   [28,28,30,...flat.map(()=>14),12,20,14],(row,r)=>{const L=r.length;for(let c=4;c<=L-2;c++)row.getCell(c).alignment={horizontal:"center",vertical:"middle"};row.getCell(L-2).font={bold:true,color:{argb:XB}};row.getCell(L-1).fill=fl(TF[r[L-1]]||XW);row.getCell(L).numFmt="dd mmm yyyy"});
+ sheet("Scoring Guide","Each evaluator's total is the sum of the criteria; a nominee's score is the average of all evaluators' totals",["Category","Criterion","Max points","Weight %","Outstanding (90%+)","Very good (75%+)","Satisfactory (60%+)"],
+  [...C.flatMap(c=>c[1].map(([k,l,mx])=>[c[0],l,mx,+(mx/TOT*100).toFixed(1),"≥ "+pt(mx*.9),"≥ "+pt(mx*.75),"≥ "+pt(mx*.6)])),["Total","",TOT,100,"","",""],...TIERS.map((x,i)=>["Suggested tier",x[1],"",cut(x,i),"","",""])],
+  [34,38,12,12,18,18,20],row=>{row.getCell(1).font={bold:true,color:{argb:XB}};[3,4,5,6,7].forEach(c=>row.getCell(c).alignment={horizontal:"center"})});
  const buf=await wb.xlsx.writeBuffer(),a=document.createElement("a");
  a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="TOMSP2027_Evaluation_"+new Date().toISOString().slice(0,10)+".xlsx";document.body.appendChild(a);a.click();a.remove()}
 
@@ -150,12 +180,12 @@ function open(id){const n=N.find(x=>x.id==id),m=(n.evals||{})[me.uid]?.scores||{
  const evt=Object.values(n.evals||{}).map(e=>`<tr><td>${esc(e.by)}</td><td><b>${e.total}</b> / 100</td><td>${esc(e.rec)}</td><td>${fmt(new Date(e.at))}</td></tr>`).join("");
  const el=Object.entries(n.elig||{}).map(([k,v])=>`${v?"☑":"☐"} ${esc(k)}`).join("<br>");
  const links=esc(n.links).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>");
- const sc=C.map(([h,cr],ci)=>`<h3 style="background:${COL[ci]};padding:5px 8px;border-radius:5px">${h} <span id="c${ci}"></span></h3>`+cr.map(([k,l,mx])=>`<div class="sc"><span>${l} (max ${mx})</span><input type="number" min="0" max="${mx}" step="0.5" data-k="${k}" data-max="${mx}" data-c="${ci}" value="${m[k]??""}"></div>`).join("")).join("");
+ const sc=C.map(([h,cr],ci)=>`<h3 style="background:${COL[ci]};padding:5px 8px;border-radius:5px">${h} <span id="c${ci}"></span></h3>`+cr.map(([k,l,mx])=>`<div class="sc"><span>${l} (max ${mx})</span><span class="ip"><em class="bnd" id="bd-${k}"></em><input type="number" min="0" max="${mx}" step="0.5" data-k="${k}" data-max="${mx}" data-c="${ci}" value="${m[k]??""}"></span></div>`).join("")).join("");
  $("#detail").innerHTML=`<section><button class="s" id="back">← Back to list</button><h2 style="margin-top:12px">${esc(n.info?.name)}</h2><p>${esc(n.info?.school)} · ${esc(n.info?.course)} · GWA ${esc(n.info?.gwa)}${sub(n)?" · Submitted "+fmt(sub(n)):""}</p><h3>Eligibility (verify)</h3><p>${el}</p>${ev}<h3>Attachments</h3><p>${links||"None"}</p>${evt?`<h3>Evaluations so far</h3><table><tr><th>Evaluator</th><th>Total</th><th>Recommendation</th><th>Date</th></tr>${evt}</table>`:""}</section>
- <section><h2>Your scoring</h2>${sc}<p class="tot">Total: <span id="tot">0</span> / 100 · <span id="tr"></span></p><p><label>Your recommendation <select id="rec"><option>Strongly Recommend<option>Recommend<option>Waitlist<option>Not Recommended</select></label> <button id="save">Save my scores</button> <span id="ok"></span></p></section>`;
+ <section><h2>Your scoring</h2>${sc}<details class="gd"><summary>Scoring guide</summary>${rubric()}</details>${mbar()}<p class="tot">Total: <span id="tot">0</span> / 100 · <span id="tr"></span></p><p><label>Your recommendation <select id="rec"><option>Strongly Recommend<option>Recommend<option>Waitlist<option>Not Recommended</select></label> <button id="save">Save my scores</button> <span id="ok"></span></p></section>`;
  if(n.evals?.[me.uid]?.rec)$("#rec").value=n.evals[me.uid].rec;
- const calc=()=>{let t=0;C.forEach((c,ci)=>{let s=0;$$(`[data-c="${ci}"]`).forEach(i=>{let v=parseFloat(i.value)||0;const mx=+i.dataset.max;if(v>mx){v=mx;i.value=mx}if(v<0){v=0;i.value=0}s+=v});$("#c"+ci).textContent=`${s} / ${c[1].reduce((a,x)=>a+x[2],0)}`;t+=s});
-  $("#tot").textContent=t;$("#tr").textContent="Suggested: "+tier(t);if(!n.evals?.[me.uid]?.rec)$("#rec").value=tier(t);return t};
+ const calc=()=>{let t=0;C.forEach((c,ci)=>{let s=0;$$(`[data-c="${ci}"]`).forEach(i=>{let v=parseFloat(i.value)||0;const mx=+i.dataset.max;if(v>mx){v=mx;i.value=mx}if(v<0){v=0;i.value=0}$("#bd-"+i.dataset.k).textContent=bandOf(v/mx,i.value);s+=v});$("#c"+ci).textContent=`${s} / ${c[1].reduce((a,x)=>a+x[2],0)}`;$("#sg"+ci).style.width=(s/cmax(c)*100)+"%";t+=s});
+  $("#tot").textContent=t;$("#tot2").textContent=t;$("#tf").style.width=(t/TOT*100)+"%";$("#tr2").textContent=tier(t);$("#tr2").className="pill "+tc[tier(t)];$("#tr").textContent="Suggested: "+tier(t);if(!n.evals?.[me.uid]?.rec)$("#rec").value=tier(t);return t};
  $$("[data-k]").forEach(i=>i.oninput=calc);calc();
  $("#save").onclick=async()=>{const scores=Object.fromEntries($$("[data-k]").map(i=>[i.dataset.k,parseFloat(i.value)||0])),total=calc();
   const entry={scores,total,rec:$("#rec").value,by:me.email,at:Date.now()};
