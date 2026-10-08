@@ -27,7 +27,7 @@ import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase
 import {getFirestore,collection,getDocs,doc,updateDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 // ▼ SAME FIREBASE CONFIG AS index.html
-const cfg={apiKey:"YOUR_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT",appId:"YOUR_APP_ID"};
+const cfg={apiKey:"AIzaSyB6KBiCHPhfIDRxIsPOREmUbtgf78OP-kw",authDomain:"tomsp-2027.firebaseapp.com",projectId:"tomsp-2027",appId:"1:431854235237:web:ec192595596a619a31a08c"};
 const app=initializeApp(cfg),db=getFirestore(app),auth=getAuth(app);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
