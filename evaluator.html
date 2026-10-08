@@ -21,10 +21,24 @@ button.s{background:#e8eef4;color:var(--n)}header button.s{background:var(--y);c
 .tl{top:0;left:0;width:min(30vw,380px);aspect-ratio:540/520;background:url(bg-tl.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:radial-gradient(ellipse at 0 0,#000 30%,transparent 74%);mask-image:radial-gradient(ellipse at 0 0,#000 30%,transparent 74%)}
 .tr{top:0;right:0;width:min(34vw,440px);aspect-ratio:648/830;background:url(bg-tr.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:radial-gradient(ellipse at 100% 0,#000 28%,transparent 72%);mask-image:radial-gradient(ellipse at 100% 0,#000 28%,transparent 72%)}
 .crew{position:relative;z-index:0;height:clamp(100px,13vw,180px);background:url(bg-crew.jpg) bottom center/cover no-repeat;mix-blend-mode:multiply;-webkit-mask-image:linear-gradient(to top,#000 35%,transparent);mask-image:linear-gradient(to top,#000 35%,transparent)}
-header,main{position:relative;z-index:1}section{background:rgba(255,255,255,.95);border-radius:14px}body{font-family:Poppins,system-ui,sans-serif}</style>
+header,main{position:relative;z-index:1}section{background:rgba(255,255,255,.95);border-radius:14px}body{font-family:Poppins,system-ui,sans-serif}
+main{max-width:1120px}header h1{font-size:19px}.who{font-size:12px;opacity:.85;margin-right:12px}
+#login{max-width:560px;margin:40px auto}#login input{min-width:200px;margin:4px 0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:2px 0 16px}
+.st{background:#EAF1FB;border-radius:12px;padding:12px 14px;border-left:5px solid #0B3A82}.st.gold{background:#FFF6D1;border-left-color:#F2C200}
+.st b{display:block;font-size:26px;line-height:1.1;color:#0B3A82}.st span{font-size:12px;color:#5b6b7a}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}.tools input[type=search]{flex:1;min-width:200px;padding:9px 12px}.tools select{padding:9px}
+.cnt{font-size:12.5px;color:#5b6b7a}.sp{flex:1}
+.tw{overflow-x:auto}thead th{background:#0B3A82;color:#fff;border-bottom:3px solid #F2C200;position:sticky;top:0;white-space:nowrap}
+tbody tr:nth-child(even){background:#F6F9FD}.rk{font-weight:700;color:#0B3A82}small{color:#5b6b7a}.empty{text-align:center;color:#5b6b7a;padding:24px}
+.bar{display:inline-block;vertical-align:middle;width:70px;height:8px;background:#E3EAF4;border-radius:9px;margin-right:8px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,#0B3A82,#1B5BB5)}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:600;white-space:nowrap}
+.t1{background:#F2C200;color:#2a2200}.t2{background:#FFF3C2;color:#5b4a00}.t3{background:#DCE8F8;color:#0B3A82}.t4{background:#EEF1F5;color:#5b6b7a}.t0{background:#fff;border:1px dashed #c7d2e0;color:#5b6b7a}
+.done{background:#0B3A82;color:#fff}.pend{background:#fff;border:1px solid #F2C200;color:#8a6d00}
+</style>
 </head><body>
 <div class="bg tl"></div><div class="bg tr"></div>
-<header><h1 style="display:flex;align-items:center;gap:10px"><img src="tomsp-badge.png" alt="" style="height:38px;width:38px;border-radius:50%"> TOMSP 2027 · Evaluator</h1><span><a href="index.html" style="color:#fff;font-size:13px;margin-right:12px">Home</a><button class="s" id="out" hidden>Sign out</button></span></header>
+<header><h1 style="display:flex;align-items:center;gap:10px"><img src="tomsp-badge.png" alt="" style="height:38px;width:38px;border-radius:50%"> TOMSP 2027 · Evaluator</h1><span><a href="index.html" style="color:#fff;font-size:13px;margin-right:12px">Home</a><a id="adm" href="admin.html" hidden style="color:#fff;font-size:13px;margin-right:12px">Manage evaluators</a><span id="who" class="who" hidden></span><button class="s" id="out" hidden>Sign out</button></span></header>
 <main>
 <section id="login"><h2>Evaluator sign-in</h2><p><input id="em" type="email" placeholder="Email"> <input id="pw" type="password" placeholder="Password"> <button id="go">Sign in</button></p><p id="err" style="color:#b00020"></p></section>
 <div id="app" hidden><section id="list"></section><div id="detail"></div></div>
@@ -52,16 +66,66 @@ let N=[],me=null;
 
 $("#go").onclick=()=>signInWithEmailAndPassword(auth,$("#em").value,$("#pw").value).catch(e=>$("#err").textContent=e.message);
 $("#out").onclick=()=>signOut(auth);
-onAuthStateChanged(auth,u=>{me=u&&!u.isAnonymous?u:null;$("#login").hidden=!!me;$("#app").hidden=!me;$("#out").hidden=!me;if(me)load()});
+onAuthStateChanged(auth,u=>{me=u&&!u.isAnonymous?u:null;$("#login").hidden=!!me;$("#app").hidden=!me;$("#out").hidden=!me;$("#adm").hidden=!(me&&me.email.toLowerCase()=="bonchristianarmendez25@gmail.com");$("#who").hidden=!me;if(me)$("#who").textContent=me.email;if(me)load()});
 
 async function load(){try{N=(await getDocs(collection(db,"nominations"))).docs.map(d=>({id:d.id,...d.data()}));list()}
  catch(e){$("#list").innerHTML="<p>Could not load submissions. This account is not authorized as an evaluator. Please contact the administrator.</p>"}}
 const avg=n=>{const v=Object.values(n.evals||{}).map(e=>e.total);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
 
+let Q="",SCH="",ST="";
+const tc={"Strongly Recommend":"t1","Recommend":"t2","Waitlist":"t3","Not Recommended":"t4","Not scored":"t0"};
+const fmt=d=>d&&!isNaN(d)?d.toLocaleDateString("en-PH",{year:"numeric",month:"short",day:"numeric"}):"";
+const sub=n=>n.submittedAt?.toDate?.()||null;
+const mine=n=>!!(n.evals||{})[me.uid];
+const nm=n=>n.info?.name||"(no name)";
+function stats(){const sc=N.map(avg).filter(a=>a!=null);return{tot:N.length,scored:sc.length,avg:sc.length?sc.reduce((a,b)=>a+b,0)/sc.length:null,top:sc.length?Math.max(...sc):null,pend:N.filter(n=>!mine(n)).length}}
+const tierOf=n=>{const a=avg(n);return a==null?"Not scored":tier(a)};
+function rows(){const q=Q.toLowerCase();return N.filter(n=>(!q||[n.info?.name,n.info?.school,n.info?.course].join(" ").toLowerCase().includes(q))&&(!SCH||n.info?.school==SCH)&&(!ST||(ST=="pending"?!mine(n):ST=="mine"?mine(n):tierOf(n)==ST)))}
+function table(){const R=rows();
+ $("#tb").innerHTML=R.length?R.map(n=>{const a=avg(n),t=tierOf(n);
+  return `<tr data-id="${n.id}"><td class="rk">${N.indexOf(n)+1}</td><td><b>${esc(nm(n))}</b><br><small>${esc(n.info?.course)}</small></td><td>${esc(n.info?.school)}</td><td>${esc(n.info?.gwa)}</td><td>${Object.keys(n.evals||{}).length}</td><td>${a==null?"—":`<div class="bar"><i style="width:${Math.min(100,a)}%"></i></div><b>${a.toFixed(1)}</b>`}</td><td><span class="pill ${tc[t]}">${t}</span></td><td>${mine(n)?'<span class="pill done">Scored by you</span>':'<span class="pill pend">Pending</span>'}</td></tr>`}).join(""):`<tr><td colspan="8" class="empty">No nominees match your filters.</td></tr>`;
+ $("#cnt").textContent=`Showing ${R.length} of ${N.length}`}
+
 function list(){$("#detail").innerHTML="";$("#list").hidden=false;
  N.sort((a,b)=>(avg(b)??-1)-(avg(a)??-1));
- $("#list").innerHTML=`<button class="s" id="csv" style="float:right">Export CSV</button><h2>Nominees ranked by average score (${N.length})</h2><table><tr><th>#</th><th>Name</th><th>School</th><th>GWA</th><th>Evaluators</th><th>Avg /100</th><th>Suggested</th></tr>`+
- N.map((n,i)=>{const a=avg(n);return `<tr data-id="${n.id}"><td>${i+1}</td><td>${esc(n.info?.name)}</td><td>${esc(n.info?.school)}</td><td>${esc(n.info?.gwa)}</td><td>${Object.keys(n.evals||{}).length}</td><td>${a==null?"—":a.toFixed(1)}</td><td>${a==null?"Not scored":tier(a)}</td></tr>`}).join("")+"</table>"}
+ const s=stats(),schools=[...new Set(N.map(n=>n.info?.school).filter(Boolean))].sort();
+ $("#list").innerHTML=`<div class="stats"><div class="st"><b>${s.tot}</b><span>Nominees</span></div><div class="st"><b>${s.scored}</b><span>Scored by anyone</span></div><div class="st"><b>${s.avg==null?"—":s.avg.toFixed(1)}</b><span>Average score</span></div><div class="st"><b>${s.top==null?"—":s.top.toFixed(1)}</b><span>Highest score</span></div><div class="st gold"><b>${s.pend}</b><span>Waiting for your score</span></div></div>
+ <div class="tools"><input id="q" type="search" placeholder="Search name, school or course" value="${esc(Q)}"><select id="sch"><option value="">All schools</option>${schools.map(x=>`<option${x==SCH?" selected":""}>${esc(x)}</option>`).join("")}</select>
+ <select id="stt"><option value="">All statuses</option><option value="pending"${ST=="pending"?" selected":""}>Waiting for my score</option><option value="mine"${ST=="mine"?" selected":""}>Scored by me</option>${["Strongly Recommend","Recommend","Waitlist","Not Recommended","Not scored"].map(x=>`<option${x==ST?" selected":""}>${x}</option>`).join("")}</select>
+ <span id="cnt" class="cnt"></span><span class="sp"></span><button class="s" id="csv">CSV</button><button id="xlsx">Download Excel</button></div>
+ <div class="tw"><table><thead><tr><th>#</th><th>Nominee</th><th>School</th><th>GWA</th><th>Evaluators</th><th>Average /100</th><th>Suggested</th><th>Your status</th></tr></thead><tbody id="tb"></tbody></table></div>`;
+ $("#q").oninput=e=>{Q=e.target.value;table()};$("#sch").onchange=e=>{SCH=e.target.value;table()};$("#stt").onchange=e=>{ST=e.target.value;table()};table()}
+
+const XB="FF0B3A82",XY="FFF2C200",XL="FFEAF1FB",XW="FFFFFFFF";
+const TF={"Strongly Recommend":"FFF2C200","Recommend":"FFFFF3C2","Waitlist":"FFDCE8F8","Not Recommended":"FFEEF1F5","Not scored":"FFFFFFFF"};
+const fl=c=>({type:"pattern",pattern:"solid",fgColor:{argb:c}});
+async function xlsx(){
+ if(!window.ExcelJS)await new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";s.onload=ok;s.onerror=no;document.head.appendChild(s)}).catch(()=>{});
+ if(!window.ExcelJS){alert("Could not load the Excel library. Check your connection and try again.");return}
+ const wb=new ExcelJS.Workbook(),now=new Date().toLocaleString("en-PH"),s=stats();wb.creator="TOMSP 2027 Pre-Screening";
+ const sheet=(name,sub,head,data,w,fmtRow)=>{const ws=wb.addWorksheet(name,{views:[{state:"frozen",ySplit:4}]});
+  head.forEach((_,i)=>ws.getColumn(i+1).width=w[i]||13);
+  ws.mergeCells(1,1,1,head.length);const t=ws.getCell(1,1);t.value="TOMSP 2027 · "+name;t.font={size:16,bold:true,color:{argb:XW}};t.fill=fl(XB);t.alignment={vertical:"middle",indent:1};ws.getRow(1).height=30;
+  ws.mergeCells(2,1,2,head.length);ws.getCell(2,1).fill=fl(XY);ws.getRow(2).height=6;
+  ws.mergeCells(3,1,3,head.length);ws.getCell(3,1).value=sub;ws.getCell(3,1).font={italic:true,color:{argb:"FF5A6B85"}};
+  const h=ws.getRow(4);head.forEach((x,i)=>h.getCell(i+1).value=x);h.height=36;
+  h.eachCell(c=>{c.font={bold:true,color:{argb:XW}};c.fill=fl(XB);c.alignment={vertical:"middle",horizontal:"center",wrapText:true};c.border={bottom:{style:"medium",color:{argb:XY}}}});
+  data.forEach((r,i)=>{const row=ws.addRow(r);row.eachCell({includeEmpty:true},c=>{if(i%2)c.fill=fl(XL);c.border={bottom:{style:"thin",color:{argb:"FFD5DEEC"}}};c.alignment={vertical:"middle",wrapText:true}});if(fmtRow)fmtRow(row,r)});
+  ws.autoFilter={from:{row:4,column:1},to:{row:4,column:head.length}};ws.pageSetup={orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0};return ws};
+ const tiers=["Strongly Recommend","Recommend","Waitlist","Not Recommended","Not scored"];
+ sheet("Summary","Exported "+now,["Measure","Value"],[["Total nominees",s.tot],["Nominees with scores",s.scored],["Average score /100",s.avg==null?"":+s.avg.toFixed(1)],["Highest score /100",s.top==null?"":+s.top.toFixed(1)],...tiers.map(t=>[t,N.filter(n=>tierOf(n)==t).length])],[34,16],(row,r)=>{row.getCell(1).font={bold:true,color:{argb:XB}};row.getCell(2).alignment={horizontal:"center"};if(TF[r[0]])row.getCell(1).fill=fl(TF[r[0]])});
+ const cm=c=>c[1].reduce((a,x)=>a+x[2],0);
+ sheet("Rankings","Exported "+now+" · "+N.length+" nominee(s) · scores are averages across evaluators",["Rank","Nominee","School","Course","GWA","Evaluators",...C.map(c=>c[0]+" /"+cm(c)),"Average /100","Suggested","Submitted"],
+  N.map((n,i)=>{const ev=Object.values(n.evals||{}),k=ev.length,a=avg(n);
+   return [i+1,nm(n),n.info?.school||"",n.info?.course||"",parseFloat(n.info?.gwa)||n.info?.gwa||"",k,...C.map(c=>k?+(ev.reduce((t,e)=>t+c[1].reduce((u,x)=>u+(+e.scores?.[x[0]]||0),0),0)/k).toFixed(1):""),a==null?"":+a.toFixed(1),tierOf(n),sub(n)||""]}),
+  [7,28,30,24,8,11,...C.map(()=>16),13,20,14],(row,r)=>{const L=r.length;for(let c=6;c<=L-2;c++){row.getCell(c).alignment={horizontal:"center",vertical:"middle"};if(c>6)row.getCell(c).numFmt="0.0"}
+   row.getCell(1).alignment={horizontal:"center"};row.getCell(L-2).font={bold:true,color:{argb:XB}};row.getCell(L-1).fill=fl(TF[r[L-2]]);row.getCell(L-1).font={bold:true,color:{argb:XB}};row.getCell(L).numFmt="dd mmm yyyy"});
+ const flat=C.flatMap(c=>c[1]);
+ sheet("Evaluator Scores","One row per evaluator per nominee · "+now,["Nominee","School","Evaluator",...flat.map(x=>x[1]+" /"+x[2]),"Total /100","Recommendation","Date scored"],
+  N.flatMap(n=>Object.values(n.evals||{}).map(e=>[nm(n),n.info?.school||"",e.by||"",...flat.map(x=>+e.scores?.[x[0]]||0),e.total,e.rec||"",new Date(e.at)])),
+  [28,28,30,...flat.map(()=>14),12,20,14],(row,r)=>{const L=r.length;for(let c=4;c<=L-2;c++)row.getCell(c).alignment={horizontal:"center",vertical:"middle"};row.getCell(L-2).font={bold:true,color:{argb:XB}};row.getCell(L-1).fill=fl(TF[r[L-1]]||XW);row.getCell(L).numFmt="dd mmm yyyy"});
+ const buf=await wb.xlsx.writeBuffer(),a=document.createElement("a");
+ a.href=URL.createObjectURL(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));a.download="TOMSP2027_Evaluation_"+new Date().toISOString().slice(0,10)+".xlsx";document.body.appendChild(a);a.click();a.remove()}
 
 function csv(){const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
  const head=["Rank","Name","School","Course","GWA","Evaluators",...C.map(c=>c[0]),"Average total /100","Suggested"];
@@ -70,14 +134,15 @@ function csv(){const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
   return [i+1,n.info?.name,n.info?.school,n.info?.course,n.info?.gwa,ev.length,...cats,a==null?"":a.toFixed(1),a==null?"Not scored":tier(a)]});
  const b=new Blob(["\ufeff"+[head,...rows].map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"});
  const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="TOMSP2027_rankings.csv";l.click()}
-document.addEventListener("click",e=>{if(e.target.id=="csv")csv();const r=e.target.closest("tr[data-id]");if(r)open(r.dataset.id);if(e.target.id=="back")list()});
+document.addEventListener("click",e=>{if(e.target.id=="csv")csv();if(e.target.id=="xlsx")xlsx();const r=e.target.closest("tr[data-id]");if(r)open(r.dataset.id);if(e.target.id=="back")list()});
 
 function open(id){const n=N.find(x=>x.id==id),m=(n.evals||{})[me.uid]?.scores||{};$("#list").hidden=true;
  const ev=Object.entries(n.tables||{}).map(([t,rows])=>`<h3>${esc(t)}</h3>`+(rows.length?rows.map(r=>`<div class="ev">${Object.entries(r).filter(([,v])=>v).map(([k,v])=>`<b>${esc(k)}:</b> ${esc(v)}`).join("<br>")}</div>`).join(""):"<p class='hint'>No entries</p>")).join("");
+ const evt=Object.values(n.evals||{}).map(e=>`<tr><td>${esc(e.by)}</td><td><b>${e.total}</b> / 100</td><td>${esc(e.rec)}</td><td>${fmt(new Date(e.at))}</td></tr>`).join("");
  const el=Object.entries(n.elig||{}).map(([k,v])=>`${v?"☑":"☐"} ${esc(k)}`).join("<br>");
  const links=esc(n.links).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>");
  const sc=C.map(([h,cr],ci)=>`<h3 style="background:${COL[ci]};padding:5px 8px;border-radius:5px">${h} <span id="c${ci}"></span></h3>`+cr.map(([k,l,mx])=>`<div class="sc"><span>${l} (max ${mx})</span><input type="number" min="0" max="${mx}" step="0.5" data-k="${k}" data-max="${mx}" data-c="${ci}" value="${m[k]??""}"></div>`).join("")).join("");
- $("#detail").innerHTML=`<section><button class="s" id="back">← Back to list</button><h2 style="margin-top:12px">${esc(n.info?.name)}</h2><p>${esc(n.info?.school)} · ${esc(n.info?.course)} · GWA ${esc(n.info?.gwa)}</p><h3>Eligibility (verify)</h3><p>${el}</p>${ev}<h3>Attachments</h3><p>${links||"None"}</p></section>
+ $("#detail").innerHTML=`<section><button class="s" id="back">← Back to list</button><h2 style="margin-top:12px">${esc(n.info?.name)}</h2><p>${esc(n.info?.school)} · ${esc(n.info?.course)} · GWA ${esc(n.info?.gwa)}${sub(n)?" · Submitted "+fmt(sub(n)):""}</p><h3>Eligibility (verify)</h3><p>${el}</p>${ev}<h3>Attachments</h3><p>${links||"None"}</p>${evt?`<h3>Evaluations so far</h3><table><tr><th>Evaluator</th><th>Total</th><th>Recommendation</th><th>Date</th></tr>${evt}</table>`:""}</section>
  <section><h2>Your scoring</h2>${sc}<p class="tot">Total: <span id="tot">0</span> / 100 · <span id="tr"></span></p><p><label>Your recommendation <select id="rec"><option>Strongly Recommend<option>Recommend<option>Waitlist<option>Not Recommended</select></label> <button id="save">Save my scores</button> <span id="ok"></span></p></section>`;
  if(n.evals?.[me.uid]?.rec)$("#rec").value=n.evals[me.uid].rec;
  const calc=()=>{let t=0;C.forEach((c,ci)=>{let s=0;$$(`[data-c="${ci}"]`).forEach(i=>{let v=parseFloat(i.value)||0;const mx=+i.dataset.max;if(v>mx){v=mx;i.value=mx}if(v<0){v=0;i.value=0}s+=v});$("#c"+ci).textContent=`${s} / ${c[1].reduce((a,x)=>a+x[2],0)}`;t+=s});

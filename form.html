@@ -152,4 +152,5 @@ $("#sub").onclick=async()=>{
   localStorage.removeItem("tomsp27");
   document.body.innerHTML=`<div class="bg tl"></div><div class="bg tr"></div><main><section class="done"><div class="logos"><img class="wm" src="tomsp-wordmark.png" alt="TOMSP 2027" style="width:260px"></div><h2 style="margin-top:14px">Pre-screening submitted</h2><p>Thank you. Your pre-screening form has been received by the selection committee.</p><p>Reference number<br><span class="ref">${r.id}</span></p><p class="hint">Please keep this reference number. You may now close this page.</p></section></main><div class="crew"></div>`}
  catch(e){$("#pt").textContent="Submission failed: "+e.message+" Please try again.";$("#sub").disabled=false}};
-</script></body></html>
+</script><script src="tomsp-hub.js" defer></script>
+</body></html>
