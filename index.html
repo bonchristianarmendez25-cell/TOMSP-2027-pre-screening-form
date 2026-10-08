@@ -1,0 +1,97 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TOMSP 2027 Pre-Screening</title><link rel="icon" href="assets/tomsp-seal.png">
+<style>
+:root{--n:#0B3A82;--y:#F2C200;--b:#d5dde6}
+*{box-sizing:border-box}body{font:15px/1.5 system-ui,sans-serif;margin:0;background:#f4f7fa;color:#1c2733}
+main{max-width:920px;margin:auto;padding:0 12px 80px}
+header{background:#fff;border-bottom:6px solid var(--y);padding:18px 16px;text-align:center}.logos{display:flex;justify-content:center;align-items:center;gap:14px;flex-wrap:wrap}.logos img{height:72px;width:auto}.logos .yr{font:800 34px/1 system-ui;color:var(--n)}header h1{margin:12px 0 0;font-size:20px;color:var(--n)}header p{margin:4px 0 0;font-size:13px;color:#5b6b7a}
+section{background:#fff;border:1px solid var(--b);border-top:4px solid var(--y);border-radius:10px;padding:16px;margin:14px 0}
+h2{margin:0 0 6px;font-size:17px;color:var(--n)}h3{font-size:14px;margin:18px 0 4px}
+.hint{color:#5b6b7a;font-size:13px;margin:0 0 8px}
+input[type=text],textarea{width:100%;font:inherit;padding:7px;border:1px solid var(--b);border-radius:6px}
+textarea{min-height:56px;resize:vertical}
+.g,.row{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.row{border:1px solid var(--b);border-radius:8px;padding:10px;margin:8px 0}
+label{font-size:12px;color:#5b6b7a;display:block}
+.chk{display:flex;gap:8px;align-items:center;margin:4px 0;font-size:15px;color:inherit}
+button{font:inherit;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;background:var(--n);color:#fff}
+button.s{background:#e8eef4;color:var(--n)}button:disabled{opacity:.45;cursor:not-allowed}
+#bar{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--b);padding:10px 16px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+#msg{font-size:13px}
+</style></head><body>
+<header><div class="logos"><img src="assets/tomsp-seal.png" alt="TOMSP seal"><img src="assets/tomsp-logo.png" alt="TOMSP"><span class="yr">2027</span><img src="assets/omspac-logo.png" alt="OMSPAC"></div><h1>Ten Outstanding Maritime Students of the Philippines</h1><p>Pre-Screening Evaluation Form · Nominee Evidence Sheet. Your progress saves automatically on this device.</p></header>
+<main>
+<section><h2>How to fill this out</h2>
+<p class="hint">Title = official name of the award/position/activity. Description = 1–2 sentences: what it is, who gave it, what you did. Number of possible recipients = how selective it is (e.g. "3 out of 150 cadets"). Results = what changed, with numbers. Scores are filled in by the evaluator, not you. Use <b>+ Add row</b> if you have more than one entry.</p></section>
+
+<section><h2>Nominee Information</h2><div class="g">
+<div><label>Nominee name</label><input type="text" data-i="name"></div>
+<div><label>School</label><input type="text" data-i="school"></div>
+<div><label>Course</label><input type="text" data-i="course"></div>
+<div><label>GWA (Academic Standing)</label><input type="text" data-i="gwa"></div></div></section>
+
+<section><h2>Eligibility Screening</h2><p class="hint">Tick only items you have already submitted. The evaluator will verify.</p><div id="elig"></div></section>
+
+<div id="dyn"></div>
+
+<section><h2>Attachments (links)</h2><p class="hint">Paste shareable links (Google Drive, set to "anyone with the link can view") to your Family Background Reflection, Autobiography, Maritime Project Proposal, and supporting certificates. One per line, with a label.</p>
+<textarea id="links" style="min-height:110px" placeholder="Autobiography: https://drive.google.com/...&#10;Proposal: https://..."></textarea></section>
+
+<section><h2>Data Privacy Consent</h2>
+<label class="chk"><input type="checkbox" id="consent"> I confirm the information is true, and I consent to the collection and use of my data (including GWA and personal documents) solely for TOMSP 2027 screening, in line with the Data Privacy Act of 2012.</label></section>
+</main>
+<div id="bar"><span id="msg"></span><button id="sub" disabled>Submit nomination</button></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,addDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getAuth,signInAnonymously} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// ▼ PASTE YOUR FIREBASE CONFIG HERE (Project settings > Your apps > Web app)
+const cfg={apiKey:"YOUR_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT",appId:"YOUR_APP_ID"};
+
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const E=["Currently enrolled in Maritime Program","Certificate of Enrollment submitted","GPA Certification submitted","Good Moral Certificate submitted","TOR/TCG submitted","No pending disciplinary case","Complete nomination forms accomplished","Complete supporting documents attached"];
+const T=[["Academic Awards & Distinctions",["Title","Description","Number of possible recipients"]],
+["Leadership Positions Held",["Title","Description","Number of people being led"]],
+["Impact of Leadership Roles",["Initiative","Description","Recipients","Results"]],
+["Recognition Received",["Title","Description","Number of possible recipients"]],
+["Community Involvement",["Title","Description","Recipients","Results"]],
+["Volunteerism & Service",["Title","Description","Recipients","Results"]],
+["Resilience & Values Demonstrated",["Context","Action taken","Results","Lesson learnt"]]];
+const S=[["Academic Excellence (25%)",[0],"#FDE4D0"],["Leadership Achievement (20%)",[1,2,3],"#EFD3D2"],["Social Responsibility & Community Service (15%)",[4,5],"#E6EED5"],["Character & Personal Development (15%)",[6],"#DFD8E8"]];
+
+$("#elig").innerHTML=E.map(e=>`<label class="chk"><input type="checkbox" data-e="${e}"> ${e}</label>`).join("");
+$("#dyn").innerHTML=S.map(([h,ix,c])=>`<section><h2>${h}</h2>${ix.map(i=>`<h3>${T[i][0]}</h3><div data-t="${i}"></div><button type="button" class="s" data-add="${i}">+ Add row</button>`).join("")}</section>`).join("");
+
+function add(i,v={}){const d=document.createElement("div");d.className="row";
+d.innerHTML=T[i][1].map(c=>`<div><label>${c}</label><textarea data-k="${c}"></textarea></div>`).join("")+`<div><button type="button" class="s" data-rm>Remove row</button></div>`;
+d.querySelectorAll("textarea").forEach(x=>x.value=v[x.dataset.k]||"");
+$(`[data-t="${i}"]`).append(d)}
+
+const gather=()=>({
+ info:Object.fromEntries($$("[data-i]").map(x=>[x.dataset.i,x.value.trim()])),
+ elig:Object.fromEntries($$("[data-e]").map(x=>[x.dataset.e,x.checked])),
+ links:$("#links").value.trim(),consent:$("#consent").checked,
+ tables:Object.fromEntries(T.map((t,i)=>[t[0],$$(`[data-t="${i}"] .row`).map(r=>Object.fromEntries($$("textarea").length&&[...r.querySelectorAll("textarea")].map(x=>[x.dataset.k,x.value.trim()]))).filter(r=>Object.values(r).some(Boolean))]))});
+
+const save=()=>{try{localStorage.tomsp27=JSON.stringify(gather())}catch{}check()};
+function check(){const d=gather();$("#sub").disabled=!(d.consent&&d.info.name&&d.info.school);
+ const n=Object.values(d.elig).filter(v=>!v).length;$("#msg").textContent=n?`${n} eligibility item(s) not ticked`:"All eligibility items ticked"}
+
+let d=null;try{d=JSON.parse(localStorage.tomsp27||"null")}catch{}
+if(d){$$("[data-i]").forEach(x=>x.value=d.info?.[x.dataset.i]||"");$$("[data-e]").forEach(x=>x.checked=!!d.elig?.[x.dataset.e]);$("#links").value=d.links||"";$("#consent").checked=!!d.consent}
+T.forEach((t,i)=>{const rows=d?.tables?.[t[0]]||[];(rows.length?rows:[{}]).forEach(r=>add(i,r))});
+check();
+
+document.addEventListener("input",save);document.addEventListener("change",save);
+document.addEventListener("click",e=>{const a=e.target.dataset;
+ if(a.add!==undefined){add(+a.add);save()}
+ if(a.rm!==undefined){const r=e.target.closest(".row"),box=r.parentElement;r.remove();if(!box.children.length)add(+box.dataset.t);save()}});
+
+$("#sub").onclick=async()=>{
+ if(cfg.apiKey.startsWith("YOUR_")){$("#msg").textContent="Firebase is not configured yet.";return}
+ $("#sub").disabled=true;$("#msg").textContent="Submitting…";
+ try{const db=getFirestore(initializeApp(cfg));await signInAnonymously(getAuth());
+  await addDoc(collection(db,"nominations"),{...gather(),submittedAt:serverTimestamp()});
+  localStorage.removeItem("tomsp27");document.body.innerHTML='<main><section><h2>Submitted ✔</h2><p>Your nomination has been received. You may close this page.</p></section></main>'}
+ catch(e){$("#msg").textContent="Submit failed: "+e.message;$("#sub").disabled=false}};
+</script></body></html>

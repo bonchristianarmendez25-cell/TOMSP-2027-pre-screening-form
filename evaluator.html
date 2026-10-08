@@ -1,0 +1,74 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TOMSP 2027 Evaluator</title>
+<style>
+:root{--n:#0B3A82;--y:#F2C200;--b:#d5dde6}
+*{box-sizing:border-box}body{font:15px/1.5 system-ui,sans-serif;margin:0;background:#f4f7fa;color:#1c2733}
+header{background:var(--n);border-bottom:5px solid var(--y);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}header h1{margin:0;font-size:18px}
+main{max-width:1000px;margin:auto;padding:0 12px 40px}
+section{background:#fff;border:1px solid var(--b);border-top:4px solid var(--y);border-radius:10px;padding:16px;margin:14px 0}
+h2{margin:0 0 8px;font-size:17px;color:var(--n)}h3{font-size:14px;margin:14px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:7px;border-bottom:1px solid var(--b)}
+tr[data-id]{cursor:pointer}tr[data-id]:hover{background:#eef4fa}
+input,select{font:inherit;padding:6px;border:1px solid var(--b);border-radius:6px}
+input[type=number]{width:80px}
+button{font:inherit;border:0;border-radius:6px;padding:8px 14px;cursor:pointer;background:var(--n);color:#fff}
+button.s{background:#e8eef4;color:var(--n)}header button.s{background:var(--y);color:#111}
+.ev{border-left:3px solid var(--b);padding:2px 10px;margin:6px 0;font-size:14px}.ev b{color:#5b6b7a;font-weight:600}
+.sc{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px dashed var(--b)}
+.tot{font-size:20px;font-weight:700;color:var(--n)}
+[hidden]{display:none!important}
+</style></head><body>
+<header><h1 style="display:flex;align-items:center;gap:10px"><img src="assets/tomsp-seal.png" alt="" style="height:36px;background:#fff;border-radius:6px;padding:2px"> TOMSP 2027 · Evaluator</h1><button class="s" id="out" hidden>Sign out</button></header>
+<main>
+<section id="login"><h2>Evaluator sign-in</h2><p><input id="em" type="email" placeholder="Email"> <input id="pw" type="password" placeholder="Password"> <button id="go">Sign in</button></p><p id="err" style="color:#b00020"></p></section>
+<div id="app" hidden><section id="list"></section><div id="detail"></div></div>
+</main>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,getDocs,doc,updateDoc} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+// ▼ SAME FIREBASE CONFIG AS index.html
+const cfg={apiKey:"YOUR_API_KEY",authDomain:"YOUR_PROJECT.firebaseapp.com",projectId:"YOUR_PROJECT",appId:"YOUR_APP_ID"};
+const app=initializeApp(cfg),db=getFirestore(app),auth=getAuth(app);
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const C=[["Academic Excellence",[["gwa","GPA / Academic Standing",10],["aw","Academic Awards & Distinctions",15]]],
+["Leadership Achievement",[["pos","Leadership Positions Held",8],["imp","Impact of Leadership Roles",8],["rec","Recognition Received",4]]],
+["Social Responsibility & Community Service",[["com","Community Involvement",10],["vol","Volunteerism & Service",5]]],
+["Character & Personal Development",[["fam","Family Background Reflection",5],["auto","Autobiography Quality",5],["res","Resilience & Values",5]]],
+["Student Assessment / School Endorsement",[["ch","Character Assessment",4],["rep","School Representation Potential",3],["pro","Professionalism & Conduct",3]]],
+["Maritime Project Proposal",[["rel","Relevance of Maritime Issue",4],["inn","Innovation & Creativity",4],["fea","Feasibility",4],["sus","Sustainability & Impact",3]]]];
+// Tier cut-offs: adjust to match your instructor's rubric
+const COL=["#FFF3C2","#DCE8F8","#FFF3C2","#DCE8F8","#FFF3C2","#DCE8F8"];
+const tier=t=>t>=90?"Strongly Recommend":t>=80?"Recommend":t>=70?"Waitlist":"Not Recommended";
+let N=[],me=null;
+
+$("#go").onclick=()=>signInWithEmailAndPassword(auth,$("#em").value,$("#pw").value).catch(e=>$("#err").textContent=e.message);
+$("#out").onclick=()=>signOut(auth);
+onAuthStateChanged(auth,u=>{me=u&&!u.isAnonymous?u:null;$("#login").hidden=!!me;$("#app").hidden=!me;$("#out").hidden=!me;if(me)load()});
+
+async function load(){try{N=(await getDocs(collection(db,"nominations"))).docs.map(d=>({id:d.id,...d.data()}));list()}
+ catch(e){$("#list").innerHTML="<p>Could not load: "+esc(e.message)+" (is your email in the Firestore rules?)</p>"}}
+const avg=n=>{const v=Object.values(n.evals||{}).map(e=>e.total);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+
+function list(){$("#detail").innerHTML="";$("#list").hidden=false;
+ N.sort((a,b)=>(avg(b)??-1)-(avg(a)??-1));
+ $("#list").innerHTML=`<h2>Nominees ranked by average score (${N.length})</h2><table><tr><th>#</th><th>Name</th><th>School</th><th>GWA</th><th>Evaluators</th><th>Avg /100</th><th>Suggested</th></tr>`+
+ N.map((n,i)=>{const a=avg(n);return `<tr data-id="${n.id}"><td>${i+1}</td><td>${esc(n.info?.name)}</td><td>${esc(n.info?.school)}</td><td>${esc(n.info?.gwa)}</td><td>${Object.keys(n.evals||{}).length}</td><td>${a==null?"—":a.toFixed(1)}</td><td>${a==null?"Not scored":tier(a)}</td></tr>`}).join("")+"</table>"}
+
+document.addEventListener("click",e=>{const r=e.target.closest("tr[data-id]");if(r)open(r.dataset.id);if(e.target.id=="back")list()});
+
+function open(id){const n=N.find(x=>x.id==id),m=(n.evals||{})[me.uid]?.scores||{};$("#list").hidden=true;
+ const ev=Object.entries(n.tables||{}).map(([t,rows])=>`<h3>${esc(t)}</h3>`+(rows.length?rows.map(r=>`<div class="ev">${Object.entries(r).filter(([,v])=>v).map(([k,v])=>`<b>${esc(k)}:</b> ${esc(v)}`).join("<br>")}</div>`).join(""):"<p class='hint'>No entries</p>")).join("");
+ const el=Object.entries(n.elig||{}).map(([k,v])=>`${v?"☑":"☐"} ${esc(k)}`).join("<br>");
+ const links=esc(n.links).replace(/(https?:\/\/[^\s<]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>').replace(/\n/g,"<br>");
+ const sc=C.map(([h,cr],ci)=>`<h3 style="background:${COL[ci]};padding:5px 8px;border-radius:5px">${h} <span id="c${ci}"></span></h3>`+cr.map(([k,l,mx])=>`<div class="sc"><span>${l} (max ${mx})</span><input type="number" min="0" max="${mx}" step="0.5" data-k="${k}" data-max="${mx}" data-c="${ci}" value="${m[k]??""}"></div>`).join("")).join("");
+ $("#detail").innerHTML=`<section><button class="s" id="back">← Back to list</button><h2 style="margin-top:12px">${esc(n.info?.name)}</h2><p>${esc(n.info?.school)} · ${esc(n.info?.course)} · GWA ${esc(n.info?.gwa)}</p><h3>Eligibility (verify)</h3><p>${el}</p>${ev}<h3>Attachments</h3><p>${links||"None"}</p></section>
+ <section><h2>Your scoring</h2>${sc}<p class="tot">Total: <span id="tot">0</span> / 100 · <span id="tr"></span></p><p><label>Your recommendation <select id="rec"><option>Strongly Recommend<option>Recommend<option>Waitlist<option>Not Recommended</select></label> <button id="save">Save my scores</button> <span id="ok"></span></p></section>`;
+ if(n.evals?.[me.uid]?.rec)$("#rec").value=n.evals[me.uid].rec;
+ const calc=()=>{let t=0;C.forEach((c,ci)=>{let s=0;$$(`[data-c="${ci}"]`).forEach(i=>{let v=parseFloat(i.value)||0;const mx=+i.dataset.max;if(v>mx){v=mx;i.value=mx}if(v<0){v=0;i.value=0}s+=v});$("#c"+ci).textContent=`${s} / ${c[1].reduce((a,x)=>a+x[2],0)}`;t+=s});
+  $("#tot").textContent=t;$("#tr").textContent="Suggested: "+tier(t);if(!n.evals?.[me.uid]?.rec)$("#rec").value=tier(t);return t};
+ $$("[data-k]").forEach(i=>i.oninput=calc);calc();
+ $("#save").onclick=async()=>{const scores=Object.fromEntries($$("[data-k]").map(i=>[i.dataset.k,parseFloat(i.value)||0])),total=calc();
+  const entry={scores,total,rec:$("#rec").value,by:me.email,at:Date.now()};
+  try{await updateDoc(doc(db,"nominations",id),{["evals."+me.uid]:entry});n.evals={...(n.evals||{}),[me.uid]:entry};$("#ok").textContent="Saved ✔"}catch(e){$("#ok").textContent="Failed: "+e.message}}}
+</script></body></html>
