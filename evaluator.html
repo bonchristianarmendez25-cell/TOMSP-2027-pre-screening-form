@@ -24,7 +24,7 @@ button.s{background:#e8eef4;color:var(--n)}header button.s{background:var(--y);c
 header,main{position:relative;z-index:1}section{background:rgba(255,255,255,.95);border-radius:14px}body{font-family:Poppins,system-ui,sans-serif}</style>
 </head><body>
 <div class="bg tl"></div><div class="bg tr"></div>
-<header><h1 style="display:flex;align-items:center;gap:10px"><img src="tomsp-badge.png" alt="" style="height:38px;width:38px;border-radius:50%"> TOMSP 2027 · Evaluator</h1><button class="s" id="out" hidden>Sign out</button></header>
+<header><h1 style="display:flex;align-items:center;gap:10px"><img src="tomsp-badge.png" alt="" style="height:38px;width:38px;border-radius:50%"> TOMSP 2027 · Evaluator</h1><span><a href="index.html" style="color:#fff;font-size:13px;margin-right:12px">Home</a><button class="s" id="out" hidden>Sign out</button></span></header>
 <main>
 <section id="login"><h2>Evaluator sign-in</h2><p><input id="em" type="email" placeholder="Email"> <input id="pw" type="password" placeholder="Password"> <button id="go">Sign in</button></p><p id="err" style="color:#b00020"></p></section>
 <div id="app" hidden><section id="list"></section><div id="detail"></div></div>
@@ -55,15 +55,22 @@ $("#out").onclick=()=>signOut(auth);
 onAuthStateChanged(auth,u=>{me=u&&!u.isAnonymous?u:null;$("#login").hidden=!!me;$("#app").hidden=!me;$("#out").hidden=!me;if(me)load()});
 
 async function load(){try{N=(await getDocs(collection(db,"nominations"))).docs.map(d=>({id:d.id,...d.data()}));list()}
- catch(e){$("#list").innerHTML="<p>Could not load: "+esc(e.message)+" (is your email in the Firestore rules?)</p>"}}
+ catch(e){$("#list").innerHTML="<p>Could not load submissions. This account is not authorized as an evaluator. Please contact the administrator.</p>"}}
 const avg=n=>{const v=Object.values(n.evals||{}).map(e=>e.total);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
 
 function list(){$("#detail").innerHTML="";$("#list").hidden=false;
  N.sort((a,b)=>(avg(b)??-1)-(avg(a)??-1));
- $("#list").innerHTML=`<h2>Nominees ranked by average score (${N.length})</h2><table><tr><th>#</th><th>Name</th><th>School</th><th>GWA</th><th>Evaluators</th><th>Avg /100</th><th>Suggested</th></tr>`+
+ $("#list").innerHTML=`<button class="s" id="csv" style="float:right">Export CSV</button><h2>Nominees ranked by average score (${N.length})</h2><table><tr><th>#</th><th>Name</th><th>School</th><th>GWA</th><th>Evaluators</th><th>Avg /100</th><th>Suggested</th></tr>`+
  N.map((n,i)=>{const a=avg(n);return `<tr data-id="${n.id}"><td>${i+1}</td><td>${esc(n.info?.name)}</td><td>${esc(n.info?.school)}</td><td>${esc(n.info?.gwa)}</td><td>${Object.keys(n.evals||{}).length}</td><td>${a==null?"—":a.toFixed(1)}</td><td>${a==null?"Not scored":tier(a)}</td></tr>`}).join("")+"</table>"}
 
-document.addEventListener("click",e=>{const r=e.target.closest("tr[data-id]");if(r)open(r.dataset.id);if(e.target.id=="back")list()});
+function csv(){const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+ const head=["Rank","Name","School","Course","GWA","Evaluators",...C.map(c=>c[0]),"Average total /100","Suggested"];
+ const rows=N.map((n,i)=>{const ev=Object.values(n.evals||{}),k=ev.length||1,a=avg(n);
+  const cats=C.map(c=>ev.length?(ev.reduce((t,e)=>t+c[1].reduce((u,x)=>u+(+e.scores?.[x[0]]||0),0),0)/k).toFixed(1):"");
+  return [i+1,n.info?.name,n.info?.school,n.info?.course,n.info?.gwa,ev.length,...cats,a==null?"":a.toFixed(1),a==null?"Not scored":tier(a)]});
+ const b=new Blob(["\ufeff"+[head,...rows].map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"});
+ const l=document.createElement("a");l.href=URL.createObjectURL(b);l.download="TOMSP2027_rankings.csv";l.click()}
+document.addEventListener("click",e=>{if(e.target.id=="csv")csv();const r=e.target.closest("tr[data-id]");if(r)open(r.dataset.id);if(e.target.id=="back")list()});
 
 function open(id){const n=N.find(x=>x.id==id),m=(n.evals||{})[me.uid]?.scores||{};$("#list").hidden=true;
  const ev=Object.entries(n.tables||{}).map(([t,rows])=>`<h3>${esc(t)}</h3>`+(rows.length?rows.map(r=>`<div class="ev">${Object.entries(r).filter(([,v])=>v).map(([k,v])=>`<b>${esc(k)}:</b> ${esc(v)}`).join("<br>")}</div>`).join(""):"<p class='hint'>No entries</p>")).join("");

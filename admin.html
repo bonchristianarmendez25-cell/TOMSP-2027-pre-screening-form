@@ -1,0 +1,68 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>TOMSP 2027 · Admin</title><link rel="icon" href="tomsp-badge.png">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--n:#0B3A82;--y:#F2C200;--ln:#d9e1ec;--mu:#5b6b7a}
+*{box-sizing:border-box}body{font:15px/1.6 Poppins,system-ui,sans-serif;margin:0;background:#fbfcfe;color:#1c2733;position:relative}
+.bg{position:fixed;pointer-events:none;z-index:0;mix-blend-mode:multiply}
+.tl{top:0;left:0;width:min(30vw,380px);aspect-ratio:540/520;background:url(bg-tl.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:radial-gradient(ellipse at 0 0,#000 30%,transparent 74%);mask-image:radial-gradient(ellipse at 0 0,#000 30%,transparent 74%)}
+.tr{top:0;right:0;width:min(34vw,440px);aspect-ratio:648/830;background:url(bg-tr.jpg) 0 0/100% 100% no-repeat;-webkit-mask-image:radial-gradient(ellipse at 100% 0,#000 28%,transparent 72%);mask-image:radial-gradient(ellipse at 100% 0,#000 28%,transparent 72%)}
+header,main{position:relative;z-index:1}
+header{background:var(--n);border-bottom:5px solid var(--y);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:18px;display:flex;align-items:center;gap:10px}header img{height:38px;width:38px;border-radius:50%}
+main{max-width:860px;margin:auto;padding:0 12px 40px}
+section{background:rgba(255,255,255,.95);border:1px solid var(--ln);border-top:4px solid var(--y);border-radius:14px;padding:18px 20px;margin:16px 0}
+h2{margin:0 0 8px;font-size:17px;color:var(--n)}.hint{color:var(--mu);font-size:13px;margin:0 0 10px}
+input{font:inherit;padding:8px 10px;border:1px solid #c7d2e0;border-radius:8px;width:100%}
+.g{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));align-items:end}
+label{font-size:12px;color:var(--mu);display:block}
+button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:9px 16px;cursor:pointer;background:var(--n);color:#fff}
+button.s{background:#e8eef7;color:var(--n);padding:6px 12px;font-size:13px}button.r{background:#fde7e7;color:#a30d0d;padding:6px 12px;font-size:13px}
+header button.s{background:var(--y);color:#111}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:left;padding:8px;border-bottom:1px solid var(--ln)}
+.ok{background:#fff8d6;border-left:4px solid var(--y);padding:10px 14px;border-radius:6px;font-size:13.5px;margin-top:12px;white-space:pre-wrap;font-family:monospace}
+#msg{margin-top:8px;font-size:13.5px}[hidden]{display:none!important}
+</style></head><body>
+<div class="bg tl"></div><div class="bg tr"></div>
+<header><h1><img src="tomsp-badge.png" alt=""> TOMSP 2027 · Admin</h1><span><a href="index.html" style="color:#fff;font-size:13px;margin-right:12px">Home</a><button class="s" id="out" hidden>Sign out</button></span></header>
+<main>
+<section id="login"><h2>Administrator sign-in</h2><div class="g"><div><label>Email</label><input id="em" type="email"></div><div><label>Password</label><input id="pw" type="password"></div><div><button id="go">Sign in</button></div></div><p id="err" style="color:#b00020;font-size:13.5px"></p></section>
+<div id="app" hidden>
+<section><h2>Add an evaluator</h2><p class="hint">This creates the evaluator's account and authorizes it to review and score submissions.</p>
+<div class="g"><div><label>Name (optional)</label><input id="nm"></div><div><label>Email</label><input id="ne" type="email"></div><div><label>Temporary password (min. 6 characters)</label><input id="np"></div><div><button class="s" id="gen" type="button">Generate password</button> <button id="add">Add evaluator</button></div></div>
+<p id="msg"></p><div class="ok" id="cred" hidden></div></section>
+<section><h2>Authorized evaluators</h2><div id="list">Loading…</div></section>
+</div></main>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getFirestore,collection,getDocs,doc,setDoc,deleteDoc,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut,createUserWithEmailAndPassword,sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+const ADMIN="bonchristianarmendez25@gmail.com";
+const cfg={apiKey:"AIzaSyB6KBiCHPhfIDRxIsPOREmUbtgf78OP-kw",authDomain:"tomsp-2027.firebaseapp.com",projectId:"tomsp-2027",appId:"1:431854235237:web:ec192595596a619a31a08c"};
+const app=initializeApp(cfg),db=getFirestore(app),auth=getAuth(app);
+const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let me=null;
+$("#go").onclick=()=>signInWithEmailAndPassword(auth,$("#em").value.trim(),$("#pw").value).catch(e=>$("#err").textContent=e.message);
+$("#out").onclick=()=>signOut(auth);
+onAuthStateChanged(auth,u=>{me=u&&!u.isAnonymous&&u.email.toLowerCase()==ADMIN?u:null;
+ $("#login").hidden=!!me;$("#app").hidden=!me;$("#out").hidden=!u||u.isAnonymous;
+ if(u&&!u.isAnonymous&&!me){$("#err").textContent="This account is not the administrator.";$("#login").hidden=false}
+ if(me)load()});
+$("#gen").onclick=()=>{const c="ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";$("#np").value=Array.from(crypto.getRandomValues(new Uint8Array(10)),b=>c[b%c.length]).join("")};
+async function load(){try{const s=await getDocs(collection(db,"evaluators")),rows=s.docs.map(d=>d.data());
+ $("#list").innerHTML=rows.length?`<table><tr><th>Name</th><th>Email</th><th></th></tr>`+rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${esc(r.email)}</td><td><button class="s" data-rs="${esc(r.email)}">Send password reset</button> <button class="r" data-rm="${esc(r.email)}">Remove access</button></td></tr>`).join("")+"</table>":"<p class='hint'>No evaluators added yet.</p>"}
+ catch(e){$("#list").textContent="Could not load: "+e.message}}
+$("#add").onclick=async()=>{const email=$("#ne").value.trim().toLowerCase(),pw=$("#np").value,name=$("#nm").value.trim(),m=$("#msg");$("#cred").hidden=true;
+ if(!email||pw.length<6){m.textContent="Enter an email and a password of at least 6 characters.";return}
+ m.textContent="Adding…";let note="Account created.";
+ try{const sec=initializeApp(cfg,"sec"+Date.now()),sa=getAuth(sec);
+  try{await createUserWithEmailAndPassword(sa,email,pw);await signOut(sa)}
+  catch(e){if(e.code=="auth/email-already-in-use")note="This email already has an account; its existing password is unchanged.";else throw e}
+  await setDoc(doc(db,"evaluators",email),{email,name,addedBy:me.email,addedAt:serverTimestamp()});
+  m.textContent="Evaluator authorized. "+note;
+  $("#cred").hidden=false;$("#cred").textContent=`TOMSP 2027 Evaluator Access\nLink: ${location.origin}/evaluator.html\nEmail: ${email}\nPassword: ${note.startsWith("Account created")?pw:"(use your existing password)"}`;
+  $("#ne").value=$("#np").value=$("#nm").value="";load()}
+ catch(e){m.textContent="Failed: "+e.message}};
+document.addEventListener("click",async e=>{const d=e.target.dataset;
+ if(d.rm){if(confirm("Remove evaluator access for "+d.rm+"?")){await deleteDoc(doc(db,"evaluators",d.rm));load()}}
+ if(d.rs){try{await sendPasswordResetEmail(auth,d.rs);alert("Password reset email sent to "+d.rs)}catch(x){alert(x.message)}}});
+</script></body></html>
