@@ -111,7 +111,16 @@ const T=[["Academic Awards & Distinctions",["Title","Description","Number of pos
 ["Volunteerism & Service",["Title","Description","Recipients","Results"],"List volunteer or service activities (e.g., outreach, relief operations, advocacy, coastal clean-ups)."],
 ["Resilience & Values Demonstrated",["Context","Action taken","Results","Lesson learnt"],"Describe up to three difficult situations: the context, the action you took, the result, and the lesson you learned."]];
 const S=[["Academic Excellence (25%)",[0],"Your GWA is entered under Nominee Information."],["Leadership Achievement (20%)",[1,2,3],""],["Social Responsibility & Community Service (15%)",[4,5],""],["Character & Personal Development (15%)",[6],"Your Family Background Reflection and Autobiography are attached under Attachments and scored by the evaluator."]];
-const PH={"Title":"e.g., Dean's Lister, 1st Semester AY 2025–2026","Description":"What it is, who gave it or where it took place, and your role.","Number of possible recipients":"e.g., 3 awardees out of 150 cadets","Number of people being led":"e.g., 120 cadets","Initiative":"Name of the project or initiative","Recipients":"e.g., 60 residents of a coastal barangay","Results":"What changed or was achieved, with numbers","Context":"The difficult situation you faced","Action taken":"What you did","Lesson learnt":"What you learned"};
+const PH=[
+{"Title":"e.g., Dean's Lister, 1st Semester AY 2025–2026","Description":"What the award is, who gave it, and what it was based on.","Number of possible recipients":"e.g., 3 awardees out of 150 cadets"},
+{"Title":"e.g., Battalion Commander, Class Mayor, Section Leader","Description":"What the role involves, who appointed or elected you, and your duties.","Number of people being led":"e.g., 120 cadets"},
+{"Initiative":"e.g., Coastal Clean-up Drive, Peer Tutoring Program","Description":"What the initiative was, when it took place, and your role in leading it.","Recipients":"e.g., 60 residents of a coastal barangay","Results":"e.g., 2 tons of waste collected; 40 students passed their reviewer exam"},
+{"Title":"e.g., Best Cadet Officer, Outstanding Student Leader","Description":"Who gave the recognition, when, and what it was for.","Number of possible recipients":"e.g., 1 awardee out of 300 cadets"},
+{"Title":"e.g., Brigada Eskwela, Tree-Planting Project","Description":"What the project was, where and when it happened, and your part in it.","Recipients":"e.g., 200 elementary students","Results":"e.g., 5 classrooms repainted; 150 seedlings planted"},
+{"Title":"e.g., Relief Operations for Typhoon Victims, Blood Drive","Description":"What the activity was, which group or organization ran it, and what you did.","Recipients":"e.g., 120 families in Brgy. San Isidro","Results":"e.g., 120 relief packs distributed; 80 units of blood collected"},
+{"Context":"e.g., I faced a financial struggle that nearly forced me to stop studying.","Action taken":"e.g., I took on a part-time job and organized my study schedule.","Results":"e.g., I stayed enrolled and kept my GWA at 1.5.","Lesson learnt":"e.g., Discipline and asking for help make hard times manageable."}
+];
+const ph=(i,c)=>((PH[i]||{})[c]||"").replace(/"/g,"&quot;");
 const MAX=5;
 
 $("#elig-l").innerHTML=E.map(e=>`<label class="chk"><input type="checkbox" data-e="${e}"><span>${e}</span></label>`).join("");
@@ -119,7 +128,7 @@ $("#dyn").innerHTML=S.map(([h,ix,n],k)=>`<section id="s${k}"><h2>${h}</h2>${n?`<
 
 const refresh=i=>{const n=$$(`[data-t="${i}"] .row`).length;$(`[data-add="${i}"]`).disabled=n>=MAX};
 function add(i,v={}){const d=document.createElement("div");d.className="row";
- d.innerHTML=T[i][1].map(c=>`<div><label>${c}</label><textarea data-k="${c}" placeholder="${PH[c]||""}"></textarea></div>`).join("")+`<div style="align-self:end"><button type="button" class="s" data-rm>Remove row</button></div>`;
+ d.innerHTML=T[i][1].map(c=>`<div><label>${c}</label><textarea data-k="${c}" placeholder="${ph(i,c)}"></textarea></div>`).join("")+`<div style="align-self:end"><button type="button" class="s" data-rm>Remove row</button></div>`;
  d.querySelectorAll("textarea").forEach(x=>x.value=v[x.dataset.k]||"");$(`[data-t="${i}"]`).append(d);refresh(i)}
 
 const gather=()=>({
